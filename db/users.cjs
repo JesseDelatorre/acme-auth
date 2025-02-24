@@ -1,5 +1,6 @@
 const client = require(`./client.cjs`);
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 
 const createUser = async(usernameToCreate, passwordToCreate) => {
@@ -24,8 +25,13 @@ const { rows } = await client.query(`
 const user = rows[0];
 if(user) {
 const doesPasswordMatch = await bcrypt.compare(password, user.password)
-console.log(doesPasswordMatch);
-return 'token'
+// console.log(doesPasswordMatch);
+  if(doesPasswordMatch) {
+    const token = await jwt.sign({ username: user.username }, process.env.JWT_SECRET )
+    return token;
+  }else {
+    throw new Error(' Bad credentials');
+  }
 }else{
   throw new Error('Bad credentials');
 }
